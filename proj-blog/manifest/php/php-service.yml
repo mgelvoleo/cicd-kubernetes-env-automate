@@ -1,0 +1,31 @@
+---
+# PHP-FPM Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-fpm-service
+  namespace: dev
+spec:
+  selector:
+    app: php-fpm
+  ports:
+  - protocol: TCP
+    port: 9000
+    targetPort: 9000
+  type: NodePort
+
+---
+# Nginx Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: dev
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: NodePort

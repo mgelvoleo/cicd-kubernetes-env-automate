@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-mysql
+  namespace: dev
+spec:
+  ports:
+  - port: 3306        # Port exposed within cluster
+    targetPort: 3306  # Port on external MySQL
+    protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-mysql
+  namespace: dev
+subsets:
+  - addresses:
+    - ip: 192.168.56.7  # Your external MySQL IP
+    ports:
+    - port: 3306
+      name: mysql

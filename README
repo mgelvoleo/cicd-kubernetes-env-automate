@@ -1,0 +1,67 @@
+🧱 Project Structure:
+
+1 Controller Node (Ansible Host)
+
+1 Master Node (Control Plane)
+
+2 Worker Nodes (Cluster Nodes)
+
+
+💻 Technologies Used:
+
+Vagrant + VirtualBox
+
+Ubuntu Jammy (22.04)
+
+Ansible
+
+Kubernetes v1.29
+
+Calico CNIFirst 
+
+
+🚀 CI/CD Pipeline Workflow (Python → GitHub Actions → Kubernetes)
+
+┌──────────────────┐
+│   Developer Push  │
+│   Code to Main    │
+└────────┬─────────┘
+         │
+         ▼
+┌────────────────────────┐
+│ GitHub Actions Trigger │
+└────────┬───────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│       🧪 Test Job            │
+│ - Install dependencies       │
+│ - Run pytest                 │
+│ ✅ Validate app works        │
+└────────┬────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│       🐳 Build Job           │
+│ - Login to GHCR              │
+│ - Build Docker image         │
+│ - Push to GitHub Registry    │
+│   ghcr.io/<repo>:<sha>       │
+└────────┬────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│       ☸️ Deploy Job          │
+│ - Runs on self-hosted runner │
+│ - Apply K8s manifests        │
+│ - Update deployment image    │
+│ - Rollout status check       │
+└────────┬────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│     🌐 Kubernetes Cluster    │
+│ - Deploy Flask app           │
+│ - Service exposed on 5000    │
+│ - Accessible via NodePort    │
+└──────────────────────────────┘

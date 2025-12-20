@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-web-volume
+spec:
+  capacity:
+    storage: 1Gi # Must match or exceed the PVC's request
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce # Must match the PVC's access mode
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "" # Explicitly set to empty to match your PVC
+  hostPath:
+    path: "/mnt/data" # Choose a directory on your node
+    type: DirectoryOrCreate

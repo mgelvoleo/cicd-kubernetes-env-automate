@@ -1,0 +1,43 @@
+# ConfigMap for Nginx configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: dev  
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /var/www/html;
+        index index.php index.html index.htm;
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            fastcgi_pass php-fpm-service:9000;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+        }
+
+        location ~ /\.ht {
+            deny all;
+        }
+    }
+
+---
+# ConfigMap for PHP configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: php-config
+  namespace: dev
+data:
+  php.ini: |
+    upload_max_filesize = 20M
+    post_max_size = 20M
+    memory_limit = 256M
+    max_execution_time = 300

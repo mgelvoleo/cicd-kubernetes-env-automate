@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm
+    spec:
+      initContainers:
+      - name: init-web-content
+        image: mgelvoleo/php-fpm-mysql:8.6
+        command: ["sh", "-c"]
+        args:
+          - cp -av /var/www/html/. /mnt/
+        volumeMounts:
+        - name: web-content
+          mountPath: /mnt
+
+      containers:
+      - name: php-fpm
+        image: mgelvoleo/php-fpm-mysql:8.6
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: web-content
+          mountPath: /var/www/html
+        - name: mysql-client-config  # Added missing volumeMount
+          mountPath: /etc/mysql/conf.d/client.cnf
+          subPath: my.cnf
+
+      volumes:
+      - name: web-content
+        persistentVolumeClaim:
+          claimName: web-content-pvc
+      - name: mysql-client-config
+        configMap:
+          name: mysql-client-config
+
+
+---
+# Nginx Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: web-content
+          mountPath: /var/www/html
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: web-content
+        persistentVolumeClaim:
+          claimName: web-content-pvc
+      - name: nginx-config
+        configMap:
+          name: nginx-config
