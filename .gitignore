@@ -1,3 +1,4 @@
 .vagrant
 id_rsa.pub
 proj-blog/
+admin.conf
