@@ -5,44 +5,59 @@ metadata:
   namespace: dev
 spec:
   replicas: 1
+
+  # ✅ ADD THIS BLOCK
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  minReadySeconds: 10
+  # ✅ END ADDITION
+
   selector:
     matchLabels:
       app: php-fpm
+
   template:
     metadata:
       labels:
         app: php-fpm
     spec:
+      terminationGracePeriodSeconds: 30
+
       initContainers:
-      - name: init-web-content
-        image: mgelvoleo/php-fpm-mysql:8.6
-        command: ["sh", "-c"]
-        args:
-          - cp -av /var/www/html/. /mnt/
-        volumeMounts:
-        - name: web-content
-          mountPath: /mnt
+        - name: init-web-content
+          image: mgelvoleo/php-fpm-mysql:8.7
+          command: ["sh", "-c"]
+          args:
+            - cp -av /var/www/html/. /mnt/
+          volumeMounts:
+            - name: web-content
+              mountPath: /mnt
 
       containers:
-      - name: php-fpm
-        image: mgelvoleo/php-fpm-mysql:8.6
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9000
-        volumeMounts:
-        - name: web-content
-          mountPath: /var/www/html
-        - name: mysql-client-config  # Added missing volumeMount
-          mountPath: /etc/mysql/conf.d/client.cnf
-          subPath: my.cnf
+        - name: php-fpm
+          image: mgelvoleo/php-fpm-mysql:8.7
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: web-content
+              mountPath: /var/www/html
+            - name: mysql-client-config
+              mountPath: /etc/mysql/conf.d/client.cnf
+              subPath: my.cnf
 
       volumes:
-      - name: web-content
-        persistentVolumeClaim:
-          claimName: web-content-pvc
-      - name: mysql-client-config
-        configMap:
-          name: mysql-client-config
+        - name: web-content
+          persistentVolumeClaim:
+            claimName: web-content-pvc
+        - name: mysql-client-config
+          configMap:
+            name: mysql-client-config
+
 
 
 ---
